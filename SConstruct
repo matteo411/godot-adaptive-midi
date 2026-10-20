@@ -23,8 +23,9 @@ else:
         library = env.SharedLibrary(
             "demo/addons/adaptive_midi/bin/libadaptive_midi.{}.{}.framework/libadaptive_midi.{}.{}".format(
                 env["platform"], env["target"], env["platform"], env["target"]), source=sources)
-    elif env["platform"] == "ios":
-        library = env.StaticLibrary("demo/addons/adaptive_midi/bin/libadaptive_midi{}{}".format(suffix, env["LIBSUFFIX"]), source=sources)
+    elif env["platform"] == "ios":  # static; tools/ios_xcframework.sh packs the device and simulator builds
+        library = env.StaticLibrary("demo/addons/adaptive_midi/bin/libadaptive_midi.ios.{}{}.a".format(
+            env["target"], ".simulator" if env["ios_simulator"] else ""), source=sources)
     else:
         library = env.SharedLibrary("demo/addons/adaptive_midi/bin/libadaptive_midi{}{}".format(suffix, env["SHLIBSUFFIX"]), source=sources)
     Default(library)

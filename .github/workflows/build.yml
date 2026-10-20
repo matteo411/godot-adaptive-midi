@@ -1,0 +1,111 @@
+# Tests the engine, builds the extension for every supported platform, runs the binding's
+# tests in Godot, and packs addons/adaptive_midi. A v* tag publishes it as a release.
+name: Build
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+env:
+  GODOT_VERSION: 4.6-stable
+
+jobs:
+  core-tests:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+      - run: pip install scons==4.4.0
+      - run: scons tests && bin/amidi-tests
+
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        target:
+          - { platform: linux, arch: x86_64, os: ubuntu-22.04 }
+          - { platform: android, arch: arm64, os: ubuntu-22.04 }
+          - { platform: android, arch: x86_64, os: ubuntu-22.04 }
+          - { platform: macos, arch: universal, os: macos-latest }
+          - { platform: ios, arch: arm64, os: macos-latest }
+        target-type: [template_debug, template_release]
+    runs-on: ${{ matrix.target.os }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+      - uses: ./godot-cpp/.github/actions/setup-godot-cpp
+        with:
+          platform: ${{ matrix.target.platform }}
+      - uses: ./godot-cpp/.github/actions/godot-cache-restore
+        with:
+          scons-cache: ${{ github.workspace }}/.scons-cache/
+          cache-name: ${{ matrix.target.platform }}_${{ matrix.target.arch }}_${{ matrix.target-type }}
+      - name: Build
+        if: matrix.target.platform != 'ios'
+        env:
+          SCONS_CACHE: ${{ github.workspace }}/.scons-cache/
+        run: scons platform=${{ matrix.target.platform }} arch=${{ matrix.target.arch }} target=${{ matrix.target-type }}
+      - name: Build (iOS xcframeworks)
+        if: matrix.target.platform == 'ios'
+        env:
+          SCONS_CACHE: ${{ github.workspace }}/.scons-cache/
+        run: tools/ios_xcframework.sh ${{ matrix.target-type }}
+      - uses: ./godot-cpp/.github/actions/godot-cache-save
+        with:
+          scons-cache: ${{ github.workspace }}/.scons-cache/
+          cache-name: ${{ matrix.target.platform }}_${{ matrix.target.arch }}_${{ matrix.target-type }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: bin-${{ matrix.target.platform }}-${{ matrix.target.arch }}-${{ matrix.target-type }}
+          path: demo/addons/adaptive_midi/bin/
+
+  godot-tests:
+    needs: build
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: bin-linux-x86_64-template_debug
+          path: demo/addons/adaptive_midi/bin/
+      - name: Godot
+        run: |
+          curl -sL -o godot.zip "https://github.com/godotengine/godot-builds/releases/download/${GODOT_VERSION}/Godot_v${GODOT_VERSION}_linux.x86_64.zip"
+          unzip -q godot.zip && mv Godot_v${GODOT_VERSION}_linux.x86_64 godot
+      - name: Binding tests
+        run: |
+          # Godot 4.6's first headless import of a project with a GDExtension crashes on exit
+          # after doing its work (README, Known issue); the second is clean.
+          timeout 120 ./godot --headless --path demo --import || true
+          timeout 120 ./godot --headless --path demo --import
+          timeout 120 ./godot --headless --path demo -s res://tests/run_tests.gd
+
+  package:
+    needs: [core-tests, build, godot-tests]
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: bin-*
+          path: demo/addons/adaptive_midi/bin/
+          merge-multiple: true
+      - name: Pack addons/adaptive_midi
+        run: |
+          cp LICENSE thirdparty/LICENSE.tinysoundfont README.md demo/addons/adaptive_midi/
+          echo "${GITHUB_REF_NAME} ${GITHUB_SHA}" > demo/addons/adaptive_midi/VERSION
+          cd demo && zip -qr ../adaptive_midi.zip addons/adaptive_midi
+      - uses: actions/upload-artifact@v4
+        with:
+          name: adaptive_midi
+          path: adaptive_midi.zip
+      - name: Release
+        if: startsWith(github.ref, 'refs/tags/v')
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "$GITHUB_REF_NAME" adaptive_midi.zip --title "$GITHUB_REF_NAME" --notes "addons/adaptive_midi for Linux x86_64, Android arm64/x86_64, macOS and iOS."

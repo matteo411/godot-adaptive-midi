@@ -16,3 +16,12 @@ macos.debug = "res://addons/adaptive_midi/bin/libadaptive_midi.macos.template_de
 macos.release = "res://addons/adaptive_midi/bin/libadaptive_midi.macos.template_release.framework"
 ios.debug = "res://addons/adaptive_midi/bin/libadaptive_midi.ios.template_debug.xcframework"
 ios.release = "res://addons/adaptive_midi/bin/libadaptive_midi.ios.template_release.xcframework"
+
+[dependencies]
+
+ios.debug = {
+	"res://addons/adaptive_midi/bin/libgodot-cpp.ios.template_debug.xcframework": ""
+}
+ios.release = {
+	"res://addons/adaptive_midi/bin/libgodot-cpp.ios.template_release.xcframework": ""
+}
