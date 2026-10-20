@@ -1,0 +1,11 @@
+{
+	"enabled_classes": [
+		"AudioFrame",
+		"AudioStream",
+		"AudioStreamPlayback",
+		"AudioStreamPlaybackResampled",
+		"FileAccess",
+		"OS",
+		"Resource"
+	]
+}

@@ -5,8 +5,8 @@
 set -e
 T="$1"
 BIN=demo/addons/adaptive_midi/bin
-scons platform=ios arch=universal ios_simulator=yes target="$T"
-scons platform=ios arch=arm64 ios_simulator=no target="$T"
+scons platform=ios arch=universal ios_simulator=yes target="$T" debug_symbols=no
+scons platform=ios arch=arm64 ios_simulator=no target="$T" debug_symbols=no
 rm -rf "$BIN/libadaptive_midi.ios.$T.xcframework" "$BIN/libgodot-cpp.ios.$T.xcframework"
 xcodebuild -create-xcframework -library "$BIN/libadaptive_midi.ios.$T.a" -library "$BIN/libadaptive_midi.ios.$T.simulator.a" \
 	-output "$BIN/libadaptive_midi.ios.$T.xcframework"

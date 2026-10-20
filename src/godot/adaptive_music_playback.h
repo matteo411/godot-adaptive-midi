@@ -1,6 +1,7 @@
 #pragma once
 #include "core/engine.h"
 
+#include <godot_cpp/classes/audio_frame.hpp>
 #include <godot_cpp/classes/audio_stream_playback_resampled.hpp>
 
 #include <atomic>

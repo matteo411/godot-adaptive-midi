@@ -3,6 +3,10 @@
 # render CLI (`scons tests`, `scons cli`), which need no Godot.
 import os
 
+# Only the engine classes the binding uses are compiled (godot-cpp's build profile):
+# the libraries, iOS's static ones above all, are a fraction of the full API's size.
+if "build_profile" not in ARGUMENTS:
+    ARGUMENTS["build_profile"] = "build_profile.json"
 env = SConscript("godot-cpp/SConstruct")
 env.Append(CPPPATH=["src", "thirdparty"])
 
