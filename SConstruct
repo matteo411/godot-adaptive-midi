@@ -13,7 +13,8 @@ if "tests" in COMMAND_LINE_TARGETS or "cli" in COMMAND_LINE_TARGETS:
     core = [host.Object("build/host/" + os.path.basename(s)[:-4], s) for s in core_sources]
     tests = host.Program("bin/amidi-tests", core + ["tests/test_engine.cpp"], LIBS=["m"])
     cli = host.Program("bin/amidi-render", core + ["src/cli/render.cpp"], LIBS=["m"])
-    Alias("tests", tests)
+    fixtures = host.Program("bin/amidi-fixtures", ["tests/make_fixtures.cpp"], LIBS=["m"])
+    Alias("tests", [tests, fixtures])
     Alias("cli", cli)
 else:
     sources = core_sources + Glob("src/godot/*.cpp")

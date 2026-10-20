@@ -1,0 +1,7 @@
+; The plugin's test project: `godot --headless --path demo -s res://tests/run_tests.gd`
+config_version=5
+
+[application]
+
+config/name="adaptive_midi demo"
+config/features=PackedStringArray("4.5")

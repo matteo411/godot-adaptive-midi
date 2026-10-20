@@ -1,0 +1,18 @@
+[configuration]
+
+entry_symbol = "adaptive_midi_library_init"
+compatibility_minimum = "4.5"
+reloadable = false
+
+[libraries]
+
+linux.debug.x86_64 = "res://addons/adaptive_midi/bin/libadaptive_midi.linux.template_debug.x86_64.so"
+linux.release.x86_64 = "res://addons/adaptive_midi/bin/libadaptive_midi.linux.template_release.x86_64.so"
+android.debug.arm64 = "res://addons/adaptive_midi/bin/libadaptive_midi.android.template_debug.arm64.so"
+android.release.arm64 = "res://addons/adaptive_midi/bin/libadaptive_midi.android.template_release.arm64.so"
+android.debug.x86_64 = "res://addons/adaptive_midi/bin/libadaptive_midi.android.template_debug.x86_64.so"
+android.release.x86_64 = "res://addons/adaptive_midi/bin/libadaptive_midi.android.template_release.x86_64.so"
+macos.debug = "res://addons/adaptive_midi/bin/libadaptive_midi.macos.template_debug.framework"
+macos.release = "res://addons/adaptive_midi/bin/libadaptive_midi.macos.template_release.framework"
+ios.debug = "res://addons/adaptive_midi/bin/libadaptive_midi.ios.template_debug.xcframework"
+ios.release = "res://addons/adaptive_midi/bin/libadaptive_midi.ios.template_release.xcframework"
